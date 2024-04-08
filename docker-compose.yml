@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # requests
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - ${CONFIG_PATH}/overseerr:/config
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # PVR
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - ${CONFIG_PATH}/sonarr:/config
+      - ${TVSERIES_PATH}:/tv
+      - ${DOWNLOADS_PATH}:/downloads
+    networks:
+      - internal
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - ${CONFIG_PATH}/radarr:/config
+      - ${MOVIES_PATH}:/movies
+      - ${DOWNLOADS_PATH}:/downloads
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # indexers
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - ${CONFIG_PATH}/prowlarr:/config
+    networks:
+      - internal
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+      - AUTO_UPDATE=false
+    volumes:
+      - ${CONFIG_PATH}/jackett:/config
+      - ${DOWNLOADS_PATH}:/downloads
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # proxies
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    environment:
+      - TZ=${TZ}
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # download clients
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+      - WEBUI_PORT=8480
+      - TORRENTING_PORT=6881
+    volumes:
+      - ${CONFIG_PATH}/qbittorrent:/config
+      - ${DOWNLOADS_PATH}:/downloads
+    ports:
+      - 6881:6881/tcp
+      - 6881:6881/udp
+    networks:
+      - internal
+    restart: unless-stopped
+
+networks:
+  internal:
